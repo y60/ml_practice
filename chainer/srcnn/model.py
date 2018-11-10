@@ -1,4 +1,5 @@
-from chainer import Chain
+import chainer
+from chainer import Chain,report
 import chainer.functions as F
 import chainer.links as L
 class SRCNN(Chain):
@@ -14,8 +15,11 @@ class SRCNN(Chain):
             self.conv3 = L.Convolution2D(
                 in_channels=n2, out_channels=3, ksize=f3, stride=1,pad=f3//2)
 
-    def __call__(self, x):
+    def __call__(self, x, y):
         h = F.relu(self.conv1(x))
         h = F.relu(self.conv2(h))
         h = self.conv3(h)
+        if chainer.config.train:
+            h = F.mean_squared_error(h,y)
+            report({'loss':h})
         return h
